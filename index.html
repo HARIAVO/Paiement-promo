@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Gestion Paiements Étudiants - Authentification & Paramètres</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin:0; padding:0;
+    background: #f0f2f5;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  #app {
+    width: 100%;
+    max-width: 950px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+    padding: 20px 30px 30px;
+  }
+  h1 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    color: #2c3e50;
+  }
+  /* MENU NAV */
+  #menuNav {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    justify-content: center;
+  }
+  #menuNav button {
+    background-color: #4e8ef7;
+    color: white;
+    font-weight: 700;
+    border: none;
+    border-radius: 10px;
+    padding: 8px 18px;
+    font-size: 1rem;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(78,142,247,0.4);
+    transition: background-color 0.3s ease;
+  }
+  #menuNav button:hover {
+    background-color: #3b6fd1;
+  }
+  #menuNav button.active {
+    background-color: #2c52b8;
+  }
+  /* FORM CONNEXION */
+  #loginSection {
+    max-width: 400px;
+    margin: 0 auto;
+  }
+  #loginSection input {
+    width: 100%;
+    padding: 10px 12px;
+    margin-bottom: 1rem;
+    border: 1.5px solid #ccc;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+  }
+  #loginSection input:focus {
+    border-color: #4e8ef7;
+    outline: none;
+    box-shadow: 0 0 8px rgba(78,142,247,0.3);
+  }
+  #loginSection button {
+    width: 100%;
+    background-color: #4e8ef7;
+    color: white;
+    font-weight: 700;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(78,142,247,0.4);
+    transition: background-color 0.3s ease;
+  }
+  #loginSection button:hover {
+    background-color: #3b6fd1;
+  }
+  #loginError {
+    color: red; display:none; text-align:center; margin-top:0.7rem;
+  }
+  /* TABLEAU */
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 12px;
+    margin-top: 1.5rem;
+  }
+  thead tr {
+    background: #4e8ef7;
+    color: white;
+    font-weight: 700;
+    user-select: none;
+  }
+  th, td {
+    padding: 12px 15px;
+    text-align: left;
+    vertical-align: middle;
+  }
+  tbody tr {
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    border-radius: 12px;
+    transition: background-color 0.2s ease;
+  }
+  tbody tr:hover {
+    background-color: #f5faff;
+  }
+  /* Boutons */
+  .btn-delete {
+    background-color: #ff6b6b;
+    border: none;
+    color: white;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 3px 8px rgba(255,107,107,0.5);
+    transition: background-color 0.25s ease;
+    font-size: 0.9rem;
+  }
+  .btn-delete:hover {
+    background-color: #e54e4e;
+  }
+  #addStudentBtn, #addUserBtn {
+    background-color: #4e8ef7;
+    color: white;
+    font-weight: 700;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-top: 15px;
+    box-shadow: 0 4px 10px rgba(78,142,247,0.4);
+    transition: background-color 0.3s ease;
+  }
+  #addStudentBtn:hover, #addUserBtn:hover {
+    background-color: #3b6fd1;
+  }
+  /* FORM AJOUT */
+  form.addForm {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    background: #f9fbff;
+    padding: 15px 20px;
+    border-radius: 12px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.05);
+  }
+  form.addForm input[type=text],
+  form.addForm input[type=number],
+  form.addForm input[type=password] {
+    flex: 1 1 140px;
+    padding: 8px 12px;
+    border: 1.5px solid #ccc;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+  }
+  form.addForm input[type=text]:focus,
+  form.addForm input[type=number]:focus,
+  form.addForm input[type=password]:focus {
+    border-color: #4e8ef7;
+    outline: none;
+    box-shadow: 0 0 8px rgba(78,142,247,0.3);
+  }
+  form.addForm button {
+    background-color: #4e8ef7;
+    color: white;
+    font-weight: 700;
+    border: none;
+    padding: 9px 22px;
+    border-radius: 10px;
+    font-size: 1rem;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(78,142,247,0.4);
+    transition: background-color 0.3s ease;
+  }
+  form.addForm button:hover {
+    background-color: #3b6fd1;
+  }
+  /* Lecture seule */
+  .readonly {
+    opacity: 0.7;
+    pointer-events: none;
+  }
+  /* Responsive */
+  @media (max-width: 720px) {
+    form.addForm {
+      flex-direction: column;
+    }
+    form.addForm input, form.addForm button {
+      flex: 1 1 100%;
+    }
+    th, td {
+      padding: 8px 10px;
+      font-size: 0.9rem;
+    }
+  }
+  /* Message déconnexion */
+  #logoutBtn {
+    background: #e74c3c;
+    border: none;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    box-shadow: 0 4px 12px rgba(231,76,60,0.5);
+    transition: background-color 0.3s ease;
+    z-index: 1000;
+  }
+  #logoutBtn:hover {
+    background: #c0392b;
+  }
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- LOGIN -->
+  <section id="loginSection">
+    <h1>Connexion requise</h1>
+    <form id="loginForm">
+      <input type="text" id="loginMatricule" placeholder="Matricule" required autocomplete="off" />
+      <input type="password" id="loginPassword" placeholder="Mot de passe" required autocomplete="off" />
+      <button type="submit">Se connecter</button>
+    </form>
+    <p id="loginError">Matricule ou mot de passe incorrect.</p>
+  </section>
+
+  <!-- APP -->
+  <section id="mainSection" style="display:none;">
+    <button id="logoutBtn" title="Déconnexion">Déconnexion</button>
+    <h1>Gestion des paiements des étudiants</h1>
+
+    <nav id="menuNav" aria-label="Navigation principale">
+      <button id="btnGestion" class="active">Gestion</button>
+      <button id="btnParams" style="display:none;">Paramètres</button>
+    </nav>
+
+    <!-- Gestion étudiants -->
+    <section id="gestionSection">
+      <table aria-label="Liste des étudiants">
+        <thead>
+          <tr>
+            <th>Nom et prénom</th>
+            <th>Matricule</th>
+            <th>2025 (Ar)</th>
+            <th>2026 (Ar)</th>
+            <th>2027 (Ar)</th>
+            <th>2028 (Ar)</th>
+            <th>Total (Ar)</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="studentList"></tbody>
+      </table>
+
+      <form id="addStudentForm" class="addForm">
+        <input type="text" id="addNom" placeholder="Nom et prénom" required autocomplete="off" />
+        <input type="text" id="addMatricule" placeholder="Matricule" required autocomplete="off" />
+        <input type="number" id="add2025" placeholder="2025" min="0" value="0" required />
+        <input type="number" id="add2026" placeholder="2026" min="0" value="0" required />
+        <input type="number" id="add2027" placeholder="2027" min="0" value="0" required />
+        <input type="number" id="add2028" placeholder="2028" min="0" value="0" required />
+        <button type="submit" id="addStudentBtn">Ajouter</button>
+      </form>
+    </section>
+
+    <!-- Paramètres utilisateurs -->
+    <section id="paramsSection" style="display:none;">
+      <h2>Gestion des utilisateurs</h2>
+      <table aria-label="Liste des utilisateurs">
+        <thead>
+          <tr>
+            <th>Matricule</th>
+            <th>Mot de passe</th>
+            <th>Droits</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="userList"></tbody>
+      </table>
+
+      <form id="addUserForm" class="addForm">
+        <input type="text" id="addUserMatricule" placeholder="Matricule" required autocomplete="off" />
+        <input type="password" id="addUserPassword" placeholder="Mot de passe" required autocomplete="off" />
+        <select id="addUserRight" required>
+          <option value="" disabled selected>Choisir droits</option>
+          <option value="edit">Peut modifier</option>
+          <option value="read">Lecture seule</option>
+        </select>
+        <button type="submit" id="addUserBtn">Ajouter utilisateur</button>
+      </form>
+    </section>
+  </section>
+
+</div>
+
+<script>
+(() => {
+  // === GESTION UTILISATEURS EN LOCAL STORAGE ===
+  const LS_USERS_KEY = 'appUsers';
+  const LS_STUDENTS_KEY = 'students';
+
+  // Initial users par défaut
+  const defaultUsers = {
+    'E001': { password: 'pass2025', canEdit: true },
+    'E002': { password: 'pass2026', canEdit: false },
+    'E003': { password: 'pass2027', canEdit: true },
+    'E004': { password: 'pass2028', canEdit: false },
+  };
+
+  // Charger users ou initialiser
+  function loadUsers() {
+    let users = localStorage.getItem(LS_USERS_KEY);
+    if (!users) {
+      localStorage.setItem(LS_USERS_KEY, JSON.stringify(defaultUsers));
+      return defaultUsers;
+    }
+    return JSON.parse(users);
+  }
+  function saveUsers(users) {
+    localStorage.setItem(LS_USERS_KEY, JSON.stringify(users));
+  }
+
+  // Charger étudiants
+  function loadStudents() {
+    let s = localStorage.getItem(LS_STUDENTS_KEY);
+    if (!s) return [];
+    return JSON.parse(s);
+  }
+  function saveStudents(students) {
+    localStorage.setItem(LS_STUDENTS_KEY, JSON.stringify(students));
+  }
+
+  // Format argent
+  function formatAr(value) {
+    return value.toLocaleString('fr-FR') + ' Ar';
+  }
+
+  // Variables DOM
+  const loginSection = document.getElementById('loginSection');
+  const loginForm = document.getElementById('loginForm');
+  const loginError = document.getElementById('loginError');
+  const mainSection = document.getElementById('mainSection');
+  const logoutBtn = document.getElementById('logoutBtn');
+
+  const menuGestionBtn = document.getElementById('btnGestion');
+  const menuParamsBtn = document.getElementById('btnParams');
+
+  const gestionSection = document.getElementById('gestionSection');
+  const paramsSection = document.getElementById('paramsSection');
+
+  const studentList = document.getElementById('studentList');
+  const addStudentForm = document.getElementById('addStudentForm');
+
+  const userList = document.getElementById('userList');
+  const addUserForm = document.getElementById('addUserForm');
+
+  // Etats
+  let currentUser = null;
+  let users = loadUsers();
+  let students = loadStudents();
+
+  // Tri alphabétique étudiants
+  function sortStudents() {
+    students.sort((a,b) => a.nom.localeCompare(b.nom, 'fr', {ignorePunctuation:true, sensitivity: 'base'}));
+  }
+  // Tri matricules utilisateurs
+  function sortUsers() {
+    return Object.keys(users).sort((a,b) => a.localeCompare(b, 'fr', {ignorePunctuation:true, sensitivity: 'base'}));
+  }
+
+  // Calcul total paiement
+  function calcTotal(s) {
+    return s.p2025 + s.p2026 + s.p2027 + s.p2028;
+  }
+
+  // Rendu liste étudiants
+  function renderStudents() {
+    sortStudents();
+    studentList.innerHTML = '';
+    if (students.length === 0) {
+      studentList.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#888; padding:20px;">Aucun étudiant enregistré.</td></tr>`;
+      return;
+    }
+    students.forEach((s, i) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${s.nom}</td>
+        <td>${s.matricule}</td>
+        <td>${formatAr(s.p2025)}</td>
+        <td>${formatAr(s.p2026)}</td>
+        <td>${formatAr(s.p2027)}</td>
+        <td>${formatAr(s.p2028)}</td>
+        <td>${formatAr(calcTotal(s))}</td>
+        <td>${currentUser.canEdit ? `<button class="btn-delete" data-index="${i}" aria-label="Supprimer ${s.nom}">Supprimer</button>` : ''}</td>
+      `;
+      studentList.appendChild(tr);
+    });
+    if (currentUser.canEdit) {
+      studentList.querySelectorAll('.btn-delete').forEach(btn => {
+        btn.addEventListener('click', e => {
+          const idx = parseInt(e.target.dataset.index, 10);
+          if (confirm(`Supprimer ${students[idx].nom} ?`)) {
+            students.splice(idx, 1);
+            saveStudents(students);
+            renderStudents();
+          }
+        });
+      });
+    }
+  }
+
+  // Rendu liste utilisateurs
+  function renderUsers() {
+    userList.innerHTML = '';
+    const sortedKeys = sortUsers();
+    if (sortedKeys.length === 0) {
+      userList.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#888; padding:20px;">Aucun utilisateur.</td></tr>`;
+      return;
+    }
+    sortedKeys.forEach(key => {
+      const u = users[key];
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${key}</td>
+        <td>${'*'.repeat(u.password.length)}</td>
+        <td>${u.canEdit ? 'Peut modifier' : 'Lecture seule'}</td>
+        <td><button class="btn-delete" data-matricule="${key}" aria-label="Supprimer utilisateur ${key}">Supprimer</button></td>
+      `;
+      userList.appendChild(tr);
+    });
+    userList.querySelectorAll('.btn-delete').forEach(btn => {
+      btn.addEventListener('click', e => {
+        const mat = e.target.dataset.matricule;
+        if (mat === currentUser.matricule) {
+          alert("Vous ne pouvez pas supprimer votre propre compte.");
+          return;
+        }
+        if (confirm(`Supprimer l'utilisateur ${mat} ?`)) {
+          delete users[mat];
+          saveUsers(users);
+          renderUsers();
+        }
+      });
+    });
+  }
+
+  // Afficher bonne section (Gestion / Paramètres)
+  function switchSection(section) {
+    if (section === 'gestion') {
+      gestionSection.style.display = 'block';
+      paramsSection.style.display = 'none';
+      menuGestionBtn.classList.add('active');
+      menuParamsBtn.classList.remove('active');
+    } else {
+      gestionSection.style.display = 'none';
+      paramsSection.style.display = 'block';
+      menuGestionBtn.classList.remove('active');
+      menuParamsBtn.classList.add('active');
+    }
+  }
+
+  // Connexion
+  loginForm.addEventListener('submit', e => {
+    e.preventDefault();
+    const mat = loginForm.loginMatricule.value.trim();
+    const pwd = loginForm.loginPassword.value;
+
+    if (users[mat] && users[mat].password === pwd) {
+      currentUser = { matricule: mat, canEdit: users[mat].canEdit };
+      loginSection.style.display = 'none';
+      mainSection.style.display = 'block';
+      loginError.style.display = 'none';
+
+      // Afficher bouton paramètres que si canEdit
+      menuParamsBtn.style.display = currentUser.canEdit ? 'inline-block' : 'none';
+
+      // Afficher ou cacher formulaire ajout selon droit
+      if (!currentUser.canEdit) {
+        addStudentForm.style.display = 'none';
+      } else {
+        addStudentForm.style.display = 'flex';
+      }
+
+      switchSection('gestion');
+      renderStudents();
+      renderUsers();
+    } else {
+      loginError.style.display = 'block';
+    }
+  });
+
+  // Ajout étudiant
+  addStudentForm.addEventListener('submit', e => {
+    e.preventDefault();
+    if (!currentUser.canEdit) return;
+
+    const nom = addStudentForm.addNom.value.trim();
+    const matricule = addStudentForm.addMatricule.value.trim();
+    const p2025 = Number(addStudentForm.add2025.value);
+    const p2026 = Number(addStudentForm.add2026.value);
+    const p2027 = Number(addStudentForm.add2027.value);
+    const p2028 = Number(addStudentForm.add2028.value);
+
+    if (!nom || !matricule || [p2025,p2026,p2027,p2028].some(v => isNaN(v) || v<0)) {
+      alert('Veuillez remplir tous les champs correctement.');
+      return;
+    }
+
+    if (students.some(s => s.matricule.toLowerCase() === matricule.toLowerCase())) {
+      alert('Ce matricule est déjà enregistré.');
+      return;
+    }
+
+    students.push({nom, matricule, p2025, p2026, p2027, p2028});
+    saveStudents(students);
+    renderStudents();
+
+    addStudentForm.reset();
+    addStudentForm.addNom.focus();
+  });
+
+  // Ajout utilisateur
+  addUserForm.addEventListener('submit', e => {
+    e.preventDefault();
+    if (!currentUser.canEdit) return;
+
+    const mat = addUserForm.addUserMatricule.value.trim();
+    const pwd = addUserForm.addUserPassword.value;
+    const right = addUserForm.addUserRight.value;
+
+    if (!mat || !pwd || !right) {
+      alert('Veuillez remplir tous les champs du formulaire utilisateur.');
+      return;
+    }
+    if (users[mat]) {
+      alert('Ce matricule utilisateur existe déjà.');
+      return;
+    }
+
+    users[mat] = {
+      password: pwd,
+      canEdit: right === 'edit'
+    };
+    saveUsers(users);
+    renderUsers();
+
+    addUserForm.reset();
+    addUserForm.addUserMatricule.focus();
+  });
+
+  // Navigation menu
+  menuGestionBtn.addEventListener('click', () => switchSection('gestion'));
+  menuParamsBtn.addEventListener('click', () => switchSection('params'));
+
+  // Déconnexion
+  logoutBtn.addEventListener('click', () => {
+    if (confirm('Voulez-vous vraiment vous déconnecter ?')) {
+      currentUser = null;
+      loginForm.reset();
+      loginSection.style.display = 'block';
+      mainSection.style.display = 'none';
+      loginError.style.display = 'none';
+      addStudentForm.style.display = 'flex';
+    }
+  });
+
+  // Initial focus
+  loginForm.loginMatricule.focus();
+})();
+</script>
+
+</body>
+</html>
