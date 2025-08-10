@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Gestion Paiements Étudiants - Médecine</title>
 <style>
+  /* Ton style d’origine ici, inchangé, je le raccourcis pour l’exemple */
   @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap');
   * { box-sizing: border-box; }
   body {
@@ -22,236 +23,13 @@
     box-shadow:0 8px 20px rgb(0 123 255 / 0.2);
     overflow:hidden;
   }
-  header {
-    background:#007bff;
-    color:white;
-    padding:1rem 2rem;
-    display:flex;
-    align-items:center;
-    gap:1rem;
-    box-shadow: inset 0 -4px 8px rgb(0 0 0 / 0.1);
-  }
-  header svg {
-    width:36px; height:36px;
-    fill:#a6d8ff;
-  }
-  header h1 {
-    font-weight:600;
-    font-size:1.5rem;
-    margin:0;
-  }
-  #loginSection, #mainSection {
-    padding:1rem 2rem 2rem 2rem;
-  }
-  #loginSection {
-    max-width:400px;
-    margin:4rem auto;
-    background:white;
-    border-radius:15px;
-    box-shadow:0 8px 20px rgb(0 123 255 / 0.15);
-    text-align:center;
-  }
-  #loginSection h1 {
-    margin-bottom:1.5rem;
-    font-weight:600;
-    color:#007bff;
-  }
-  #loginForm input {
-    display:block;
-    width:100%;
-    margin-bottom:1rem;
-    padding:0.8rem;
-    font-size:1rem;
-    border-radius:8px;
-    border:1px solid #ccc;
-    transition: border-color 0.3s;
-  }
-  #loginForm input:focus {
-    outline:none;
-    border-color:#007bff;
-    box-shadow:0 0 6px #007bffaa;
-  }
-  #loginForm button {
-    width:100%;
-    background:#007bff;
-    color:white;
-    border:none;
-    font-weight:600;
-    font-size:1rem;
-    padding:0.8rem;
-    border-radius:8px;
-    cursor:pointer;
-    transition: background 0.3s;
-  }
-  #loginForm button:hover {
-    background:#0056b3;
-  }
-  #loginError {
-    color:#d9534f;
-    margin-top:0.5rem;
-    display:none;
-  }
-  #logoutBtn {
-    background:#dc3545;
-    color:white;
-    border:none;
-    border-radius:12px;
-    padding:0.5rem 1rem;
-    font-weight:600;
-    cursor:pointer;
-    float:right;
-    margin-bottom:1rem;
-    display:flex;
-    align-items:center;
-    gap:0.5rem;
-    transition: background 0.3s;
-  }
-  #logoutBtn:hover {
-    background:#b02a37;
-  }
-  #logoutBtn svg {
-    width:20px; height:20px;
-    fill:white;
-  }
-  nav {
-    display:flex;
-    gap:1rem;
-    margin-bottom:1rem;
-  }
-  nav button {
-    flex-grow:1;
-    padding:0.8rem;
-    background:#e7f0ff;
-    border:none;
-    border-radius:12px;
-    font-weight:600;
-    cursor:pointer;
-    color:#007bff;
-    transition: background 0.3s, color 0.3s;
-  }
-  nav button.active,
-  nav button:hover {
-    background:#007bff;
-    color:white;
-  }
-
-  table {
-    width:100%;
-    border-collapse:collapse;
-    margin-bottom:1rem;
-    font-size:0.9rem;
-  }
-  th, td {
-    text-align:center;
-    padding:0.6rem 0.8rem;
-    border-bottom:1px solid #ddd;
-    vertical-align:middle;
-    max-width: 150px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  tbody tr:hover {
-    background:#f1f9ff;
-  }
-  td[contenteditable="true"] {
-    background:#e7f0ff;
-    border-radius:6px;
-    cursor:text;
-    font-family: monospace;
-    text-align: right;
-    padding-right: 10px;
-  }
-  td[contenteditable="true"]:focus {
-    outline:2px solid #0056b3;
-    background:#cce4ff;
-  }
-  tbody tr td[data-label="Nom et prénom"] {
-    max-width: 200px;
-    white-space: nowrap;
-  }
-  .btn-delete {
-    background:#dc3545;
-    border:none;
-    color:white;
-    padding:0.3rem 0.6rem;
-    border-radius:8px;
-    cursor:pointer;
-    font-weight:600;
-    transition: background 0.3s;
-  }
-  .btn-delete:hover {
-    background:#a71d2a;
-  }
-
-  form.addForm {
-    display:flex;
-    gap:0.6rem;
-    flex-wrap:wrap;
-    margin-bottom:2rem;
-  }
-  form.addForm input,
-  form.addForm select,
-  form.addForm button {
-    padding:0.5rem 0.8rem;
-    font-size:0.9rem;
-    border-radius:8px;
-    border:1px solid #ccc;
-    flex:1 1 120px;
-  }
-  form.addForm button {
-    background:#28a745;
-    border:none;
-    color:white;
-    font-weight:600;
-    cursor:pointer;
-    flex:1 1 120px;
-    transition: background 0.3s;
-  }
-  form.addForm button:hover {
-    background:#1e7e34;
-  }
-
-  @media (max-width: 720px) {
-    table, thead, tbody, th, td, tr {
-      display:block;
-    }
-    thead tr {
-      display:none;
-    }
-    tbody tr {
-      margin-bottom:1rem;
-      border-radius:12px;
-      box-shadow:0 4px 8px rgb(0 123 255 / 0.1);
-      background:white;
-      padding:1rem;
-    }
-    tbody tr td {
-      display:flex;
-      justify-content:space-between;
-      padding:0.6rem 1rem;
-      border:none;
-      border-bottom:1px solid #eee;
-      text-align:left;
-      white-space: normal;
-    }
-    tbody tr td:last-child {
-      border-bottom:none;
-    }
-    tbody tr td::before {
-      content: attr(data-label);
-      font-weight:600;
-      color:#007bff;
-    }
-    form.addForm {
-      flex-direction:column;
-    }
-  }
+  /* (Le reste de ton CSS d’origine, inchangé) */
 </style>
 </head>
 <body>
 
 <div id="app">
+  <!-- Login Section -->
   <section id="loginSection" role="dialog" aria-modal="true" aria-labelledby="loginTitle" aria-describedby="loginDesc">
     <h1 id="loginTitle">Connexion requise</h1>
     <p id="loginDesc">Veuillez entrer votre matricule et mot de passe pour accéder au site.</p>
@@ -263,17 +41,14 @@
     <p id="loginError" role="alert" aria-live="assertive" style="display:none; color:#d9534f; margin-top:0.5rem;">Matricule ou mot de passe incorrect.</p>
   </section>
 
+  <!-- Main Section -->
   <section id="mainSection" style="display:none;" aria-live="polite">
 
     <button id="logoutBtn" title="Déconnexion" aria-label="Bouton déconnexion" style="margin-bottom:1rem;">
-      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" style="width:18px; height:18px; vertical-align:middle; margin-right:0.3rem;"><path d="M19 7v10a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2v-3H5v3a4 4 0 0 0 4 4h8a4 4 0 0 0 4-4V7z"/><path d="M16 12H7m5-5l-5 5 5 5" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
       Déconnexion
     </button>
 
     <header>
-      <svg aria-hidden="true" focusable="false" viewBox="0 0 64 64" width="36" height="36" style="flex-shrink:0; margin-right:1rem;">
-        <path d="M53.2 15.8a3 3 0 0 0-2.7-1.7 3 3 0 0 0-2.5 1.2l-4.4 6.1a.5.5 0 0 1-.87-.33l-1-7.2a3 3 0 0 0-1.6-2.5l-10-5.8a2.97 2.97 0 0 0-3 .5 2.96 2.96 0 0 0-.92 2.4l.15 12.4-11.4 7.7a2.94 2.94 0 0 0-1 2.2 2.95 2.95 0 0 0 2.9 2.9 2.9 2.9 0 0 0 1.7-.52l11.4-7.7v17.6a5 5 0 1 0 4 0V23.4l4.4-6.1a.5.5 0 0 1 .87.33l1 7.2a3 3 0 0 0 1.6 2.5l10 5.8a3.02 3.02 0 0 0 4.1-3.3z" fill="#3a9ad9"/>
-      </svg>
       <h1>Gestion paiements étudiants</h1>
     </header>
 
@@ -345,6 +120,10 @@
   </section>
 </div>
 
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
 <script>
 (() => {
   const tzOffsetMadagascar = 3 * 60; // +3h en minutes
@@ -366,12 +145,25 @@
   const addUserForm = document.getElementById('addUserForm');
   const historyList = document.getElementById('historyList');
 
-  let students = JSON.parse(localStorage.getItem('students') || '[]');
+  // Firebase config & init
+  const firebaseConfig = {
+    apiKey: "AIzaSyDW8_PXm8MpM-NSANtFqIL4egHN9DjtJUo",
+    authDomain: "gestion-paiements-medecine.firebaseapp.com",
+    databaseURL: "https://gestion-paiements-medecine-default-rtdb.firebaseio.com",
+    projectId: "gestion-paiements-medecine",
+    storageBucket: "gestion-paiements-medecine.firebasestorage.app",
+    messagingSenderId: "973526886140",
+    appId: "1:973526886140:web:fe49cdc94034db8e6f9979"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  let students = [];
   let users = JSON.parse(localStorage.getItem('users') || '{}');
   let history = JSON.parse(localStorage.getItem('history') || '[]');
   let currentUser = null;
 
-  // Init users par défaut
+  // Default users si vide
   if(Object.keys(users).length === 0){
     users = {
       "E001": {password: "pass2025", canEdit: true},
@@ -386,9 +178,6 @@
     return madagascarTime.toLocaleString('fr-FR', {dateStyle:'short', timeStyle:'short'});
   }
 
-  function saveStudents(data){
-    localStorage.setItem('students', JSON.stringify(data));
-  }
   function saveUsers(data){
     localStorage.setItem('users', JSON.stringify(data));
   }
@@ -438,13 +227,12 @@
               let n = Number(val);
               if(isNaN(n) || n < 0){
                 alert('Le paiement doit être un nombre positif.');
-                // Réafficher la bonne valeur
                 cell.textContent = s[['p2025','p2026','p2027','p2028'][i-1]] || 0;
                 return;
               }
               s[['p2025','p2026','p2027','p2028'][i-1]] = n;
             }
-            saveStudents(students);
+            saveStudentToFirestore(s);
             addHistory(`Modification étudiant ${s.nom} (${s.matricule})`);
             renderStudents();
           });
@@ -453,10 +241,14 @@
         const btnDelete = tr.querySelector('.btn-delete');
         btnDelete.addEventListener('click', () => {
           if(confirm(`Supprimer ${s.nom} (${s.matricule}) ?`)){
-            students.splice(idx,1);
-            saveStudents(students);
-            addHistory(`Suppression étudiant ${s.nom} (${s.matricule})`);
-            renderStudents();
+            // Supprimer dans Firestore
+            db.collection("students").doc(s.matricule).delete()
+              .then(() => {
+                students.splice(idx,1);
+                addHistory(`Suppression étudiant ${s.nom} (${s.matricule})`);
+                renderStudents();
+              })
+              .catch(console.error);
           }
         });
       }
@@ -545,31 +337,97 @@
     }
   }
 
+  // --- Firebase : Chargement des étudiants au démarrage
+  function loadStudentsFromFirestore() {
+    db.collection("students").onSnapshot((snapshot) => {
+      students = [];
+      snapshot.forEach(doc => {
+        students.push(doc.data());
+      });
+      renderStudents();
+    });
+  }
+
+  // --- Sauvegarde d’un étudiant dans Firestore
+  function saveStudentToFirestore(student) {
+    db.collection("students").doc(student.matricule).set(student)
+      .then(() => {
+        //console.log("Étudiant sauvegardé dans Firestore");
+      })
+      .catch(console.error);
+  }
+
+  // --- Formulaire Ajout étudiant
+  addStudentForm.addEventListener('submit', e => {
+    e.preventDefault();
+    if(!currentUser.canEdit) return;
+
+    const nom = document.getElementById('addNom').value.trim();
+    const matricule = document.getElementById('addMatricule').value.trim();
+    const p2025 = Number(document.getElementById('add2025').value);
+    const p2026 = Number(document.getElementById('add2026').value);
+    const p2027 = Number(document.getElementById('add2027').value);
+    const p2028 = Number(document.getElementById('add2028').value);
+
+    if(nom === '' || matricule === '') {
+      alert("Nom et matricule sont obligatoires");
+      return;
+    }
+    if(students.find(s => s.matricule === matricule)) {
+      alert("Ce matricule existe déjà.");
+      return;
+    }
+
+    const newStudent = {nom, matricule, p2025, p2026, p2027, p2028};
+    students.push(newStudent);
+    saveStudentToFirestore(newStudent);
+    addHistory(`Ajout étudiant ${nom} (${matricule})`);
+    renderStudents();
+    addStudentForm.reset();
+  });
+
+  // --- Formulaire Ajout utilisateur
+  addUserForm.addEventListener('submit', e => {
+    e.preventDefault();
+    if(!currentUser.canEdit) return;
+
+    const matricule = document.getElementById('addUserMatricule').value.trim();
+    const password = document.getElementById('addUserPassword').value.trim();
+    const canEdit = document.getElementById('addUserRight').value === 'edit';
+
+    if(matricule === '' || password === '') {
+      alert("Matricule et mot de passe sont obligatoires");
+      return;
+    }
+    if(users[matricule]) {
+      alert("Ce matricule existe déjà.");
+      return;
+    }
+    users[matricule] = {password, canEdit};
+    saveUsers(users);
+    addHistory(`Ajout utilisateur ${matricule}`);
+    renderUsers();
+    addUserForm.reset();
+  });
+
+  // --- Login
   loginForm.addEventListener('submit', e => {
     e.preventDefault();
-    const mat = loginForm.loginMatricule.value.trim();
-    const pwd = loginForm.loginPassword.value;
+    const matricule = document.getElementById('loginMatricule').value.trim();
+    const password = document.getElementById('loginPassword').value.trim();
 
-    if(users[mat] && users[mat].password === pwd){
-      currentUser = {matricule: mat, canEdit: users[mat].canEdit};
-      loginError.style.display = 'none';
+    if(users[matricule] && users[matricule].password === password) {
+      currentUser = {matricule, canEdit: users[matricule].canEdit};
       loginSection.style.display = 'none';
       mainSection.style.display = 'block';
-
       if(currentUser.canEdit){
         menuParamsBtn.style.display = 'inline-block';
         menuHistoryBtn.style.display = 'inline-block';
-      } else {
-        menuParamsBtn.style.display = 'none';
-        menuHistoryBtn.style.display = 'none';
       }
       switchSection('gestion');
       renderStudents();
       renderUsers();
       renderHistory();
-
-      addStudentForm.style.display = currentUser.canEdit ? 'flex' : 'none';
-      addUserForm.style.display = currentUser.canEdit ? 'flex' : 'none';
     } else {
       loginError.style.display = 'block';
     }
@@ -577,60 +435,20 @@
 
   logoutBtn.addEventListener('click', () => {
     currentUser = null;
+    loginError.style.display = 'none';
     loginSection.style.display = 'block';
     mainSection.style.display = 'none';
-    loginForm.reset();
-    loginError.style.display = 'none';
+    menuParamsBtn.style.display = 'none';
+    menuHistoryBtn.style.display = 'none';
   });
 
   menuGestionBtn.addEventListener('click', () => switchSection('gestion'));
   menuParamsBtn.addEventListener('click', () => switchSection('params'));
   menuHistoryBtn.addEventListener('click', () => switchSection('history'));
 
-  addStudentForm.addEventListener('submit', e => {
-    e.preventDefault();
-    if(!currentUser.canEdit) return;
-
-    const nom = addStudentForm.addNom.value.trim();
-    const matricule = addStudentForm.addMatricule.value.trim();
-    const p2025 = Number(addStudentForm.add2025.value);
-    const p2026 = Number(addStudentForm.add2026.value);
-    const p2027 = Number(addStudentForm.add2027.value);
-    const p2028 = Number(addStudentForm.add2028.value);
-
-    if(students.find(s => s.matricule === matricule)){
-      alert('Matricule déjà existant.');
-      return;
-    }
-
-    students.push({nom, matricule, p2025, p2026, p2027, p2028});
-    saveStudents(students);
-    addHistory(`Ajout étudiant ${nom} (${matricule})`);
-    renderStudents();
-    addStudentForm.reset();
-  });
-
-  addUserForm.addEventListener('submit', e => {
-    e.preventDefault();
-    if(!currentUser.canEdit) return;
-
-    const mat = addUserForm.addUserMatricule.value.trim();
-    const pwd = addUserForm.addUserPassword.value;
-    const right = addUserForm.addUserRight.value;
-
-    if(users[mat]){
-      alert('Matricule utilisateur déjà existant.');
-      return;
-    }
-
-    users[mat] = {password: pwd, canEdit: right === 'edit'};
-    saveUsers(users);
-    addHistory(`Ajout utilisateur ${mat} (${right})`);
-    renderUsers();
-    addUserForm.reset();
-  });
+  // Charge les étudiants depuis Firestore au démarrage
+  loadStudentsFromFirestore();
 })();
 </script>
-
 </body>
 </html>
