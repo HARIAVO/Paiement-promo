@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Gestion Paiements Étudiants - Médecine</title>
 <style>
-  /* Ton style validé, inchangé */
+  /* Ton CSS EXACT */
+  /* ... (le même CSS que dans ton code, je le garde tel quel ici, pour la lisibilité, remplace avec ton CSS complet) */
+  /* Copie-colle ici tout ton CSS déjà fourni dans ton code */
   @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap');
   * { box-sizing: border-box; }
   body {
@@ -135,7 +137,6 @@
     background:#007bff;
     color:white;
   }
-
   table {
     width:100%;
     border-collapse:collapse;
@@ -184,7 +185,6 @@
   .btn-delete:hover {
     background:#a71d2a;
   }
-
   form.addForm {
     display:flex;
     gap:0.6rem;
@@ -212,7 +212,6 @@
   form.addForm button:hover {
     background:#1e7e34;
   }
-
   @media (max-width: 720px) {
     table, thead, tbody, th, td, tr {
       display:block;
@@ -255,13 +254,13 @@
 <div id="app">
   <section id="loginSection" role="dialog" aria-modal="true" aria-labelledby="loginTitle" aria-describedby="loginDesc">
     <h1 id="loginTitle">Connexion requise</h1>
-    <p id="loginDesc">Veuillez entrer votre matricule et mot de passe pour accéder au site.</p>
+    <p id="loginDesc">Veuillez entrer votre email et mot de passe pour accéder au site.</p>
     <form id="loginForm" aria-label="Formulaire de connexion">
-      <input type="text" id="loginMatricule" placeholder="Matricule" required autocomplete="off" aria-required="true" aria-label="Matricule" />
+      <input type="email" id="loginEmail" placeholder="Email" required autocomplete="off" aria-required="true" aria-label="Email" />
       <input type="password" id="loginPassword" placeholder="Mot de passe" required autocomplete="off" aria-required="true" aria-label="Mot de passe" />
       <button type="submit" aria-label="Se connecter">Se connecter</button>
     </form>
-    <p id="loginError" role="alert" aria-live="assertive" style="display:none; color:#d9534f; margin-top:0.5rem;">Matricule ou mot de passe incorrect.</p>
+    <p id="loginError" role="alert" aria-live="assertive" style="display:none; color:#d9534f; margin-top:0.5rem;">Email ou mot de passe incorrect.</p>
   </section>
 
   <section id="mainSection" style="display:none;" aria-live="polite">
@@ -317,8 +316,7 @@
       <table aria-label="Liste des utilisateurs">
         <thead>
           <tr>
-            <th>Matricule</th>
-            <th>Mot de passe</th>
+            <th>Email</th>
             <th>Droits</th>
             <th>Action</th>
           </tr>
@@ -327,8 +325,7 @@
       </table>
 
       <form id="addUserForm" class="addForm" aria-label="Formulaire d'ajout d'utilisateur">
-        <input type="text" id="addUserMatricule" placeholder="Matricule" required autocomplete="off" aria-required="true" aria-label="Matricule utilisateur" />
-        <input type="password" id="addUserPassword" placeholder="Mot de passe" required autocomplete="off" aria-required="true" aria-label="Mot de passe utilisateur" />
+        <input type="email" id="addUserEmail" placeholder="Email" required autocomplete="off" aria-required="true" aria-label="Email utilisateur" />
         <select id="addUserRight" required aria-label="Droits utilisateur">
           <option value="" disabled selected>Choisir droits</option>
           <option value="edit">Peut modifier</option>
@@ -348,9 +345,14 @@
 
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <script>
+(() => {
+  const tzOffsetMadagascar = 3 * 60; // +3h en minutes
+
+  // Firebase config - mets ici tes propres infos
   const firebaseConfig = {
   apiKey: "AIzaSyDW8_PXm8MpM-NSANtFqIL4egHN9DjtJUo",
   authDomain: "gestion-paiements-medecine.firebaseapp.com",
@@ -358,327 +360,355 @@
   projectId: "gestion-paiements-medecine",
   storageBucket: "gestion-paiements-medecine.firebasestorage.app",
   messagingSenderId: "973526886140",
-  appId: "1:973526886140:web:fe49cdc9
-    // databaseURL n'est pas nécessaire pour Firestore
+  appId: "1:973526886140:web:fe49cdc94034db8e6f9979"
+
   };
 
+  // Initialise Firebase
   firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
   const db = firebase.firestore();
 
-  // Variables globales
-  let students = [];
-  let users = {};
-  let history = [];
-  let currentUser = null;
+  // DOM Elements
+  const loginSection = document.getElementById('loginSection');
+  const loginForm = document.getElementById('loginForm');
+  const loginError = document.getElementById('loginError');
+  const mainSection = document.getElementById('mainSection');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const menuGestionBtn = document.getElementById('btnGestion');
+  const menuParamsBtn = document.getElementById('btnParams');
+  const menuHistoryBtn = document.getElementById('btnHistory');
+  const gestionSection = document.getElementById('gestionSection');
+  const paramsSection = document.getElementById('paramsSection');
+  const historySection = document.getElementById('historySection');
+  const studentListTbody = document.getElementById('studentList');
+  const addStudentForm = document.getElementById('addStudentForm');
+  const userListTbody = document.getElementById('userList');
+  const addUserForm = document.getElementById('addUserForm');
+  const historyList = document.getElementById('historyList');
 
-  // Affiche l'heure locale de Madagascar au format court
+  // Etat courant
+  let currentUser = null;
+  let users = {};    // objet {email: {canEdit: bool}}
+  let history = [];  // tableau des actions
+
+  // Formater date locale Madagascar
   function formatMadagascarDate(d) {
     const utc = d.getTime() + (d.getTimezoneOffset() * 60000);
-    const madagascarTime = new Date(utc + 3 * 60 * 60000);
-    return madagascarTime.toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' });
+    const madagascarTime = new Date(utc + tzOffsetMadagascar * 60000);
+    return madagascarTime.toLocaleString('fr-FR', {dateStyle:'short', timeStyle:'short'});
   }
 
-  // --- Rendu HTML ---
+  // Afficher ou cacher une section avec gestion des tabIndex et aria
+  function switchTab(newBtn, newSection) {
+    [menuGestionBtn, menuParamsBtn, menuHistoryBtn].forEach(btn => {
+      btn.classList.remove('active');
+      btn.setAttribute('aria-selected', 'false');
+      btn.tabIndex = -1;
+    });
+    [gestionSection, paramsSection, historySection].forEach(sec => sec.style.display = 'none');
 
-  // Rendu étudiants dans le tableau
-  function renderStudents() {
-    students.sort((a, b) => a.nom.localeCompare(b.nom));
-    const tbody = document.getElementById('studentList');
-    tbody.innerHTML = '';
+    newBtn.classList.add('active');
+    newBtn.setAttribute('aria-selected', 'true');
+    newBtn.tabIndex = 0;
+    newSection.style.display = 'block';
+    newSection.focus();
+  }
 
-    students.forEach((s, idx) => {
-      const total = (Number(s.p2025) || 0) + (Number(s.p2026) || 0) + (Number(s.p2027) || 0) + (Number(s.p2028) || 0);
+  // Récupérer les droits d’un utilisateur depuis Firestore
+  async function loadUsers() {
+    const snapshot = await db.collection('users').get();
+    users = {};
+    snapshot.forEach(doc => {
+      users[doc.id] = doc.data();
+    });
+    renderUserList();
+  }
+
+  // Rendre la liste utilisateurs
+  function renderUserList() {
+    userListTbody.innerHTML = '';
+    Object.entries(users).forEach(([email, data]) => {
       const tr = document.createElement('tr');
-      tr.dataset.id = s.matricule;
-      tr.innerHTML = `
-        <td ${currentUser.canEdit ? 'contenteditable="true" aria-label="Nom et prénom de ' + s.nom + '"' : ''} data-label="Nom et prénom">${s.nom}</td>
-        <td data-label="Matricule">${s.matricule}</td>
-        <td ${currentUser.canEdit ? 'contenteditable="true" aria-label="Paiement 2025 de ' + s.nom + '"' : ''} data-label="2025 (Ar)">${s.p2025 || 0}</td>
-        <td ${currentUser.canEdit ? 'contenteditable="true" aria-label="Paiement 2026 de ' + s.nom + '"' : ''} data-label="2026 (Ar)">${s.p2026 || 0}</td>
-        <td ${currentUser.canEdit ? 'contenteditable="true" aria-label="Paiement 2027 de ' + s.nom + '"' : ''} data-label="2027 (Ar)">${s.p2027 || 0}</td>
-        <td ${currentUser.canEdit ? 'contenteditable="true" aria-label="Paiement 2028 de ' + s.nom + '"' : ''} data-label="2028 (Ar)">${s.p2028 || 0}</td>
-        <td data-label="Total (Ar)">${total}</td>
-        <td>${currentUser.canEdit ? '<button class="btn-delete" aria-label="Supprimer ' + s.nom + '">Supprimer</button>' : ''}</td>
-      `;
-      tbody.appendChild(tr);
+      const tdEmail = document.createElement('td');
+      tdEmail.textContent = email;
+      const tdRight = document.createElement('td');
+      tdRight.textContent = data.right || 'lecture seule';
+      const tdAction = document.createElement('td');
+      if(email !== currentUser.email){
+        const btnDel = document.createElement('button');
+        btnDel.className = 'btn-delete';
+        btnDel.textContent = 'Supprimer';
+        btnDel.onclick = () => deleteUser(email);
+        tdAction.appendChild(btnDel);
+      }
+      tr.appendChild(tdEmail);
+      tr.appendChild(tdRight);
+      tr.appendChild(tdAction);
+      userListTbody.appendChild(tr);
     });
   }
 
-  // Rendu utilisateurs
-  function renderUsers() {
-    const tbody = document.getElementById('userList');
-    tbody.innerHTML = '';
-    Object.entries(users).forEach(([matricule, user]) => {
-      const tr = document.createElement('tr');
-      tr.dataset.matricule = matricule;
-      tr.innerHTML = `
-        <td>${matricule}</td>
-        <td>●●●●●●</td>
-        <td>${user.right}</td>
-        <td><button class="btn-delete" aria-label="Supprimer utilisateur ${matricule}">Supprimer</button></td>
-      `;
-      tbody.appendChild(tr);
+  async function deleteUser(email) {
+    if(confirm(`Supprimer l'utilisateur ${email} ?`)) {
+      await db.collection('users').doc(email).delete();
+      await loadUsers();
+      addHistory(`Suppression de l'utilisateur ${email}`);
+    }
+  }
+
+  // Charger les étudiants
+  async function loadStudents() {
+    const snapshot = await db.collection('students').orderBy('nom').get();
+    studentListTbody.innerHTML = '';
+    snapshot.forEach(doc => {
+      const student = doc.data();
+      const tr = createStudentRow(doc.id, student);
+      studentListTbody.appendChild(tr);
     });
   }
 
-  // Rendu historique
-  function renderHistory() {
-    const ul = document.getElementById('historyList');
-    ul.innerHTML = '';
-    history.slice().reverse().forEach(h => {
-      const li = document.createElement('li');
-      li.textContent = `[${formatMadagascarDate(new Date(h.date))}] ${h.user} a ${h.action}`;
-      ul.appendChild(li);
-    });
-  }
+  // Créer une ligne étudiant
+  function createStudentRow(id, student) {
+    const tr = document.createElement('tr');
+    // Nom prénom
+    const tdNom = document.createElement('td');
+    tdNom.textContent = student.nom;
+    tdNom.setAttribute('data-label', 'Nom et prénom');
+    tdNom.contentEditable = users[currentUser.email]?.right === 'edit';
+    tdNom.spellcheck = false;
+    tdNom.onblur = () => updateStudentField(id, 'nom', tdNom.textContent.trim());
 
-  // --- Chargement données Firestore en temps réel ---
+    // Matricule
+    const tdMatricule = document.createElement('td');
+    tdMatricule.textContent = student.matricule;
+    tdMatricule.setAttribute('data-label', 'Matricule');
+    tdMatricule.contentEditable = users[currentUser.email]?.right === 'edit';
+    tdMatricule.spellcheck = false;
+    tdMatricule.onblur = () => updateStudentField(id, 'matricule', tdMatricule.textContent.trim());
 
-  function loadStudentsRealtime() {
-    db.collection('students').onSnapshot(snapshot => {
-      students = [];
-      snapshot.forEach(doc => {
-        students.push({ matricule: doc.id, ...doc.data() });
-      });
-      renderStudents();
-    });
-  }
-
-  function loadUsersRealtime() {
-    db.collection('users').onSnapshot(snapshot => {
-      users = {};
-      snapshot.forEach(doc => {
-        users[doc.id] = doc.data();
-      });
-      renderUsers();
-    });
-  }
-
-  function loadHistoryRealtime() {
-    db.collection('history').orderBy('date', 'desc').limit(50).onSnapshot(snapshot => {
-      history = [];
-      snapshot.forEach(doc => {
-        history.push(doc.data());
-      });
-      renderHistory();
-    });
-  }
-
-  // --- Auth basique par Firestore (attention pas sécurisé, juste pour démo) ---
-  function login(matricule, password) {
-    if(users[matricule] && users[matricule].password === password) {
-      currentUser = {
-        matricule,
-        canEdit: users[matricule].right === 'edit',
-        right: users[matricule].right
+    // Paiements
+    const years = ['2025', '2026', '2027', '2028'];
+    const tdYears = years.map(year => {
+      const td = document.createElement('td');
+      td.setAttribute('data-label', year + ' (Ar)');
+      td.contentEditable = users[currentUser.email]?.right === 'edit';
+      td.spellcheck = false;
+      td.textContent = student[year] ?? '0';
+      td.onblur = () => {
+        let val = parseInt(td.textContent.trim());
+        if(isNaN(val) || val < 0) val = 0;
+        td.textContent = val;
+        updateStudentField(id, year, val);
       };
-      localStorage.setItem('currentUser', JSON.stringify(currentUser));
-      return true;
+      return td;
+    });
+
+    // Total
+    const tdTotal = document.createElement('td');
+    tdTotal.setAttribute('data-label', 'Total (Ar)');
+    const total = years.reduce((acc,y) => acc + (parseInt(student[y]) || 0), 0);
+    tdTotal.textContent = total;
+
+    // Action delete
+    const tdAction = document.createElement('td');
+    if(users[currentUser.email]?.right === 'edit'){
+      const btnDel = document.createElement('button');
+      btnDel.className = 'btn-delete';
+      btnDel.textContent = 'Supprimer';
+      btnDel.onclick = () => deleteStudent(id);
+      tdAction.appendChild(btnDel);
     }
-    return false;
+
+    // Append all cells
+    tr.appendChild(tdNom);
+    tr.appendChild(tdMatricule);
+    tdYears.forEach(td => tr.appendChild(td));
+    tr.appendChild(tdTotal);
+    tr.appendChild(tdAction);
+    return tr;
   }
 
-  function logout() {
-    currentUser = null;
-    localStorage.removeItem('currentUser');
-  }
-
-  // --- Évènements ---
-
-  document.getElementById('loginForm').addEventListener('submit', e => {
+  // Ajouter un étudiant
+  addStudentForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const matricule = e.target.loginMatricule.value.trim();
-    const password = e.target.loginPassword.value.trim();
-
-    if(login(matricule, password)) {
-      document.getElementById('loginSection').style.display = 'none';
-      document.getElementById('mainSection').style.display = 'block';
-      document.getElementById('loginError').style.display = 'none';
-      showTab('btnGestion');
-      loadStudentsRealtime();
-      loadUsersRealtime();
-      loadHistoryRealtime();
-    } else {
-      document.getElementById('loginError').style.display = 'block';
+    if(users[currentUser.email]?.right !== 'edit'){
+      alert('Vous n\'avez pas les droits pour ajouter.');
+      return;
     }
-  });
-
-  document.getElementById('logoutBtn').addEventListener('click', () => {
-    logout();
-    location.reload();
-  });
-
-  // Ajout étudiant
-  document.getElementById('addStudentForm').addEventListener('submit', e => {
-    e.preventDefault();
-    if(!currentUser || !currentUser.canEdit) return alert("Droits insuffisants");
-
     const nom = document.getElementById('addNom').value.trim();
     const matricule = document.getElementById('addMatricule').value.trim();
-    const p2025 = Number(document.getElementById('add2025').value);
-    const p2026 = Number(document.getElementById('add2026').value);
-    const p2027 = Number(document.getElementById('add2027').value);
-    const p2028 = Number(document.getElementById('add2028').value);
-
-    if(!nom || !matricule) return alert("Nom et matricule sont requis");
-
-    db.collection('students').doc(matricule).set({
+    const pay2025 = parseInt(document.getElementById('add2025').value) || 0;
+    const pay2026 = parseInt(document.getElementById('add2026').value) || 0;
+    const pay2027 = parseInt(document.getElementById('add2027').value) || 0;
+    const pay2028 = parseInt(document.getElementById('add2028').value) || 0;
+    if(!nom || !matricule){
+      alert('Nom et matricule sont obligatoires.');
+      return;
+    }
+    const studentData = {
       nom,
-      p2025,
-      p2026,
-      p2027,
-      p2028
-    })
-    .then(() => {
-      addHistory(currentUser.matricule, `ajouté l'étudiant ${nom} (${matricule})`);
-      e.target.reset();
-    })
-    .catch(err => {
-      alert("Erreur ajout étudiant: " + err.message);
-    });
-  });
-
-  // Ajout utilisateur
-  document.getElementById('addUserForm').addEventListener('submit', e => {
-    e.preventDefault();
-    if(!currentUser || currentUser.right !== 'edit') return alert("Droits insuffisants");
-
-    const matricule = document.getElementById('addUserMatricule').value.trim();
-    const password = document.getElementById('addUserPassword').value.trim();
-    const right = document.getElementById('addUserRight').value;
-
-    if(!matricule || !password || !right) return alert("Tous les champs sont requis");
-
-    db.collection('users').doc(matricule).set({
-      password,
-      right
-    })
-    .then(() => {
-      addHistory(currentUser.matricule, `ajouté l'utilisateur ${matricule} avec droit ${right}`);
-      e.target.reset();
-    })
-    .catch(err => {
-      alert("Erreur ajout utilisateur: " + err.message);
-    });
-  });
-
-  // Suppression étudiant / utilisateur
-  document.getElementById('studentList').addEventListener('click', e => {
-    if(e.target.classList.contains('btn-delete')) {
-      if(!currentUser || !currentUser.canEdit) return alert("Droits insuffisants");
-      const matricule = e.target.closest('tr').dataset.id;
-      if(confirm(`Confirmer suppression de l'étudiant ${matricule} ?`)) {
-        db.collection('students').doc(matricule).delete()
-          .then(() => {
-            addHistory(currentUser.matricule, `supprimé l'étudiant ${matricule}`);
-          })
-          .catch(err => alert("Erreur suppression: " + err.message));
-      }
-    }
-  });
-  document.getElementById('userList').addEventListener('click', e => {
-    if(e.target.classList.contains('btn-delete')) {
-      if(!currentUser || currentUser.right !== 'edit') return alert("Droits insuffisants");
-      const matricule = e.target.closest('tr').dataset.matricule;
-      if(confirm(`Confirmer suppression de l'utilisateur ${matricule} ?`)) {
-        db.collection('users').doc(matricule).delete()
-          .then(() => {
-            addHistory(currentUser.matricule, `supprimé l'utilisateur ${matricule}`);
-          })
-          .catch(err => alert("Erreur suppression: " + err.message));
-      }
-    }
-  });
-
-  // Modification inline des données étudiant (nom, paiements)
-  document.getElementById('studentList').addEventListener('input', e => {
-    if(!currentUser || !currentUser.canEdit) return;
-    const cell = e.target;
-    const tr = cell.closest('tr');
-    if(!tr) return;
-
-    const matricule = tr.dataset.id;
-    const fieldMap = {
-      0: 'nom',
-      2: 'p2025',
-      3: 'p2026',
-      4: 'p2027',
-      5: 'p2028'
+      matricule,
+      '2025': pay2025,
+      '2026': pay2026,
+      '2027': pay2027,
+      '2028': pay2028
     };
-    const cells = Array.from(tr.children);
-    const colIndex = cells.indexOf(cell);
-    const field = fieldMap[colIndex];
-    if(!field) return;
-
-    let val = cell.textContent.trim();
-    if(['p2025','p2026','p2027','p2028'].includes(field)) {
-      val = Number(val);
-      if(isNaN(val) || val < 0) {
-        cell.textContent = students.find(s => s.matricule === matricule)[field] || 0;
-        return alert("Valeur de paiement invalide");
-      }
+    try {
+      await db.collection('students').add(studentData);
+      addStudentForm.reset();
+      await loadStudents();
+      addHistory(`Ajout étudiant ${nom}`);
+    } catch(e) {
+      alert('Erreur ajout étudiant : ' + e.message);
     }
-    // Mise à jour Firestore
-    const updateObj = {};
-    updateObj[field] = val;
+  });
 
-    db.collection('students').doc(matricule).update(updateObj)
-      .then(() => {
-        addHistory(currentUser.matricule, `modifié ${field} de l'étudiant ${matricule} à "${val}"`);
-      })
-      .catch(err => {
-        alert("Erreur mise à jour: " + err.message);
+  // Supprimer étudiant
+  async function deleteStudent(id) {
+    if(confirm('Supprimer cet étudiant ?')){
+      await db.collection('students').doc(id).delete();
+      await loadStudents();
+      addHistory(`Suppression étudiant ID=${id}`);
+    }
+  }
+
+  // Mise à jour champ étudiant
+  async function updateStudentField(id, field, value) {
+    if(users[currentUser.email]?.right !== 'edit'){
+      alert('Vous n\'avez pas les droits pour modifier.');
+      await loadStudents();
+      return;
+    }
+    try {
+      await db.collection('students').doc(id).update({[field]: value});
+      addHistory(`Modification étudiant ID=${id}, champ ${field} => ${value}`);
+      await loadStudents(); // pour recalcul total etc
+    } catch(e) {
+      alert('Erreur mise à jour : ' + e.message);
+    }
+  }
+
+  // Ajouter utilisateur (dans Firestore)
+  addUserForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if(users[currentUser.email]?.right !== 'edit'){
+      alert('Vous n\'avez pas les droits pour ajouter utilisateur.');
+      return;
+    }
+    const email = document.getElementById('addUserEmail').value.trim();
+    const right = document.getElementById('addUserRight').value;
+    if(!email || !right) {
+      alert('Email et droits sont obligatoires.');
+      return;
+    }
+    try {
+      await db.collection('users').doc(email).set({right});
+      await loadUsers();
+      addUserForm.reset();
+      addHistory(`Ajout utilisateur ${email} droits=${right}`);
+    } catch(e) {
+      alert('Erreur ajout utilisateur : ' + e.message);
+    }
+  });
+
+  // Historique
+  async function loadHistory() {
+    const snapshot = await db.collection('history').orderBy('date', 'desc').limit(100).get();
+    historyList.innerHTML = '';
+    snapshot.forEach(doc => {
+      const h = doc.data();
+      const li = document.createElement('li');
+      li.textContent = `[${formatMadagascarDate(h.date.toDate())}] ${h.action}`;
+      historyList.appendChild(li);
+    });
+  }
+
+  async function addHistory(action) {
+    try {
+      await db.collection('history').add({
+        action,
+        date: firebase.firestore.Timestamp.fromDate(new Date())
       });
-  });
+      await loadHistory();
+    } catch(e) {
+      console.error('Erreur ajout historique:', e);
+    }
+  }
 
-  // Navigation onglets
-  function showTab(buttonId) {
-    const tabs = ['btnGestion', 'btnParams', 'btnHistory'];
-    tabs.forEach(id => {
-      const btn = document.getElementById(id);
-      const section = document.getElementById(id.replace('btn', '').toLowerCase() + 'Section');
-      if(id === buttonId) {
-        btn.classList.add('active');
-        btn.setAttribute('aria-selected', 'true');
-        btn.setAttribute('tabindex', '0');
-        section.style.display = 'block';
-        section.setAttribute('tabindex', '0');
-      } else {
-        btn.classList.remove('active');
-        btn.setAttribute('aria-selected', 'false');
-        btn.setAttribute('tabindex', '-1');
-        section.style.display = 'none';
-        section.setAttribute('tabindex', '-1');
+  // Événements menu
+  menuGestionBtn.onclick = () => switchTab(menuGestionBtn, gestionSection);
+  menuParamsBtn.onclick = () => switchTab(menuParamsBtn, paramsSection);
+  menuHistoryBtn.onclick = () => switchTab(menuHistoryBtn, historySection);
+
+  // Déconnexion
+  logoutBtn.onclick = () => auth.signOut();
+
+  // Connexion
+  loginForm.onsubmit = async (e) => {
+    e.preventDefault();
+    loginError.style.display = 'none';
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    try {
+      await auth.signInWithEmailAndPassword(email, password);
+    } catch(err) {
+      loginError.style.display = 'block';
+      console.error('Erreur connexion:', err);
+    }
+  };
+
+  // Gestion auth state
+  auth.onAuthStateChanged(async (user) => {
+    if(user){
+      currentUser = user;
+      loginSection.style.display = 'none';
+      mainSection.style.display = 'block';
+
+      // Charger droits utilisateurs
+      await loadUsers();
+
+      // Si utilisateur pas en base, on le crée en lecture seule par défaut
+      if(!users[currentUser.email]){
+        await db.collection('users').doc(currentUser.email).set({right:'read'});
+        await loadUsers();
       }
-    });
-  }
-  document.getElementById('btnGestion').addEventListener('click', () => showTab('btnGestion'));
-  document.getElementById('btnParams').addEventListener('click', () => showTab('btnParams'));
-  document.getElementById('btnHistory').addEventListener('click', () => showTab('btnHistory'));
 
-  // Historique ajout dans Firestore
-  function addHistory(user, action) {
-    db.collection('history').add({
-      user,
-      action,
-      date: new Date()
-    });
-  }
+      // Afficher ou cacher menu paramètres selon droit
+      if(users[currentUser.email]?.right === 'edit'){
+        menuParamsBtn.style.display = 'inline-block';
+      } else {
+        menuParamsBtn.style.display = 'none';
+        // Si actif, bascule sur gestion
+        if(menuParamsBtn.classList.contains('active')){
+          switchTab(menuGestionBtn, gestionSection);
+        }
+      }
 
-  // Initialisation
-  window.addEventListener('load', () => {
-    // Vérifie si utilisateur déjà connecté en localstorage
-    const saved = localStorage.getItem('currentUser');
-    if(saved) {
-      currentUser = JSON.parse(saved);
-      document.getElementById('loginSection').style.display = 'none';
-      document.getElementById('mainSection').style.display = 'block';
-      showTab('btnGestion');
-      loadStudentsRealtime();
-      loadUsersRealtime();
-      loadHistoryRealtime();
+      // Charger données étudiants
+      await loadStudents();
+      await loadHistory();
+
+      // Activer/désactiver le formulaire ajout étudiant selon droit
+      addStudentForm.querySelectorAll('input,button').forEach(el => {
+        el.disabled = users[currentUser.email]?.right !== 'edit';
+      });
+
+      // Activer/désactiver formulaire ajout utilisateur
+      addUserForm.querySelectorAll('input,select,button').forEach(el => {
+        el.disabled = users[currentUser.email]?.right !== 'edit';
+      });
+
+    } else {
+      currentUser = null;
+      loginSection.style.display = 'block';
+      mainSection.style.display = 'none';
+      loginForm.reset();
+      loginError.style.display = 'none';
     }
   });
+
+})();
 </script>
 
 </body>
